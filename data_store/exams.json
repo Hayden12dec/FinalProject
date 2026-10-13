@@ -61,5 +61,18 @@
     "status": "active",
     "created_at": "2026-09-10T15:14:28.258645",
     "_id": "467712dd-3886-4129-949c-a7d0732e3830"
+  },
+  {
+    "title": "ffdh",
+    "subject_code": "AI & MACHINE LEARNING",
+    "category": "AI & Machine Learning",
+    "description": "dhgh",
+    "duration_minutes": 30,
+    "total_marks": 100,
+    "passing_marks": 40,
+    "created_by": "4432ef59-3164-4c3f-8753-2858a9ab5889",
+    "status": "active",
+    "created_at": "2026-09-11T14:22:39.096934",
+    "_id": "52650f8b-e99b-49f4-a05c-9800e5bf9ef3"
   }
 ]

@@ -47,9 +47,10 @@ def get_attempt_result(attempt_id: str, current_user: Dict[str, Any] = Depends(g
 @router.get("/{attempt_id}/report")
 def get_attempt_report(attempt_id: str, current_user: Dict[str, Any] = Depends(get_current_user)):
     from backend.services.report_service import report_service
-    if current_user.get("role") != "admin":
+    is_admin = current_user.get("role") == "admin"
+    if not is_admin:
         attempts_col = get_attempts_col()
         attempt = attempts_col.find_one({"_id": attempt_id}) or attempts_col.find_one({"_id": str(attempt_id)})
         if not attempt or attempt.get("student_id") != str(current_user.get("_id")):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to access this report")
-    return report_service.generate_attempt_report(attempt_id)
+    return report_service.generate_attempt_report(attempt_id, is_admin=is_admin)

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
+import { auth } from '../services/auth';
 import RiskBadge from '../components/RiskBadge';
 import EvidenceViewerModal from '../components/EvidenceViewerModal';
 import {
@@ -18,7 +19,9 @@ import {
   Award
 } from 'lucide-react';
 
-export default function AdminReportView({ attemptId, onBack }) {
+export default function AdminReportView({ attemptId, onBack, currentUser }) {
+  const user = currentUser || auth.getUser();
+  const isAdmin = user?.role === 'admin' || auth.isAdmin();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedEvidence, setSelectedEvidence] = useState(null);
@@ -246,8 +249,8 @@ export default function AdminReportView({ attemptId, onBack }) {
           </div>
         </div>
 
-        {/* 4. Evidence Screenshots Gallery */}
-        {proctoring_summary.evidence_gallery?.length > 0 && (
+        {/* 4. Evidence Screenshots Gallery - ADMIN ONLY */}
+        {isAdmin && proctoring_summary.evidence_gallery?.length > 0 && (
           <div style={{ marginBottom: '2rem' }}>
             <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-blue)' }}>
               <ImageIcon size={18} /> 4. Incident Evidence Snapshot Gallery ({proctoring_summary.evidence_gallery.length})
@@ -288,63 +291,65 @@ export default function AdminReportView({ attemptId, onBack }) {
           </div>
         )}
 
-        {/* 5. Chronological Audit Log Timeline */}
-        <div style={{ marginBottom: '2rem' }}>
-          <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-blue)' }}>
-            <Clock size={18} /> 5. Chronological Incident Timeline
-          </h3>
-          <div style={{ backgroundColor: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Timestamp</th>
-                  <th>Flagged Anomaly</th>
-                  <th>Points</th>
-                  <th>Confidence</th>
-                  <th>Evidence</th>
-                </tr>
-              </thead>
-              <tbody>
-                {proctoring_summary.events_timeline?.length === 0 ? (
+        {/* 5. Chronological Audit Log Timeline - ADMIN ONLY */}
+        {isAdmin && (
+          <div style={{ marginBottom: '2rem' }}>
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-blue)' }}>
+              <Clock size={18} /> {proctoring_summary.evidence_gallery?.length > 0 ? '5' : '4'}. Chronological Incident Timeline
+            </h3>
+            <div style={{ backgroundColor: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
+              <table className="data-table">
+                <thead>
                   <tr>
-                    <td colSpan="5" style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-muted)' }}>
-                      No suspicious incidents flagged during this session.
-                    </td>
+                    <th>Timestamp</th>
+                    <th>Flagged Anomaly</th>
+                    <th>Points</th>
+                    <th>Confidence</th>
+                    <th>Evidence</th>
                   </tr>
-                ) : (
-                  proctoring_summary.events_timeline?.map((ev, idx) => (
-                    <tr key={idx}>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem' }}>
-                        {new Date(ev.timestamp).toLocaleTimeString()}
-                      </td>
-                      <td style={{ fontWeight: 600, color: '#fca5a5' }}>
-                        {ev.event_type.replace(/_/g, ' ')}
-                        {ev.is_demo && <span style={{ marginLeft: '6px', fontSize: '0.68rem', color: '#6ee7b7' }}>[DEMO SIMULATION]</span>}
-                      </td>
-                      <td style={{ fontWeight: 700, color: '#f59e0b' }}>
-                        +{ev.suspicion_points || 0}
-                      </td>
-                      <td>{Math.round((ev.confidence || 0.9) * 100)}%</td>
-                      <td>
-                        {ev.evidence_image ? (
-                          <button
-                            onClick={() => setSelectedEvidence({ ...ev, image_url: ev.evidence_image })}
-                            className="btn btn-secondary btn-sm"
-                            style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem' }}
-                          >
-                            View Capture
-                          </button>
-                        ) : (
-                          <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>None</span>
-                        )}
+                </thead>
+                <tbody>
+                  {proctoring_summary.events_timeline?.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-muted)' }}>
+                        No suspicious incidents flagged during this session.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    proctoring_summary.events_timeline?.map((ev, idx) => (
+                      <tr key={idx}>
+                        <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem' }}>
+                          {new Date(ev.timestamp).toLocaleTimeString()}
+                        </td>
+                        <td style={{ fontWeight: 600, color: '#fca5a5' }}>
+                          {ev.event_type.replace(/_/g, ' ')}
+                          {ev.is_demo && <span style={{ marginLeft: '6px', fontSize: '0.68rem', color: '#6ee7b7' }}>[DEMO SIMULATION]</span>}
+                        </td>
+                        <td style={{ fontWeight: 700, color: '#f59e0b' }}>
+                          +{ev.suspicion_points || 0}
+                        </td>
+                        <td>{Math.round((ev.confidence || 0.9) * 100)}%</td>
+                        <td>
+                          {ev.evidence_image ? (
+                            <button
+                              onClick={() => setSelectedEvidence({ ...ev, image_url: ev.evidence_image })}
+                              className="btn btn-secondary btn-sm"
+                              style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem' }}
+                            >
+                              View Capture
+                            </button>
+                          ) : (
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>None</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Disclaimer */}
         <div style={{
@@ -359,8 +364,8 @@ export default function AdminReportView({ attemptId, onBack }) {
         </div>
       </div>
 
-      {/* Evidence Viewer Modal */}
-      {selectedEvidence && (
+      {/* Evidence Viewer Modal - ADMIN ONLY */}
+      {isAdmin && selectedEvidence && (
         <EvidenceViewerModal
           evidence={selectedEvidence}
           onClose={() => setSelectedEvidence(null)}

@@ -130,12 +130,13 @@ def get_active_sessions(current_admin: Dict[str, Any] = Depends(get_current_admi
 
 @router.get("/reports/{attempt_id}")
 def get_attempt_report(attempt_id: str, current_user: Dict[str, Any] = Depends(get_current_user)):
-    if current_user.get("role") != "admin":
+    is_admin = current_user.get("role") == "admin"
+    if not is_admin:
         attempts_col = get_attempts_col()
         attempt = attempts_col.find_one({"_id": attempt_id}) or attempts_col.find_one({"_id": str(attempt_id)})
         if not attempt or attempt.get("student_id") != str(current_user.get("_id")):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to access this report")
-    return report_service.generate_attempt_report(attempt_id)
+    return report_service.generate_attempt_report(attempt_id, is_admin=is_admin)
 
 @router.get("/students")
 def list_students(current_admin: Dict[str, Any] = Depends(get_current_admin)):

@@ -8,7 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class ReportService:
-    def generate_attempt_report(self, attempt_id: str) -> Dict[str, Any]:
+    def generate_attempt_report(self, attempt_id: str, is_admin: bool = True) -> Dict[str, Any]:
         attempts_col = get_attempts_col()
         attempt = attempts_col.find_one({"_id": attempt_id})
         if not attempt:
@@ -43,7 +43,7 @@ class ReportService:
             if ev_type in ["MOBILE_PHONE_DETECTED", "MULTIPLE_PERSONS_DETECTED", "STUDENT_ABSENT"]:
                 high_risk_events_count += 1
 
-            if ev.get("evidence_image"):
+            if is_admin and ev.get("evidence_image"):
                 evidence_gallery.append({
                     "event_id": ev["id"],
                     "event_type": ev_type,
@@ -54,6 +54,10 @@ class ReportService:
                     "is_demo": ev.get("is_demo", False),
                     "status": ev.get("status", "REVIEW")
                 })
+
+        if not is_admin:
+            for ev in events:
+                ev.pop("evidence_image", None)
 
         answers = attempt.get("answers", {})
         attempted_count = len(answers)
@@ -95,7 +99,7 @@ class ReportService:
                 "high_risk_events": high_risk_events_count,
                 "event_breakdown": event_breakdown,
                 "evidence_gallery": evidence_gallery,
-                "events_timeline": events
+                "events_timeline": events if is_admin else []
             },
             "disclaimer": "AI suspicion scores and flagged anomalies are indicative signals designed for proctor review assistance and do not constitute automated disciplinary proof."
         }

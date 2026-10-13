@@ -181,6 +181,7 @@ export default function App() {
         return (
           <AdminReportView
             attemptId={activeAttemptId}
+            currentUser={currentUser}
             onBack={() => setCurrentRoute(currentUser.role === 'admin' ? 'admin-dashboard' : 'student-dashboard')}
           />
         );

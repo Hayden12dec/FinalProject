@@ -268,5 +268,20 @@
     "explanation": "",
     "created_at": "2026-09-10T15:14:43.303627",
     "_id": "c55ffcb4-6907-4619-ab05-1f8073b67d56"
+  },
+  {
+    "exam_id": "52650f8b-e99b-49f4-a05c-9800e5bf9ef3",
+    "question_text": "ddfh",
+    "options": [
+      "eg",
+      "sdg",
+      "gddsg",
+      "sdg"
+    ],
+    "correct_answer": 0,
+    "marks": 1,
+    "explanation": "",
+    "created_at": "2026-09-11T14:22:47.103773",
+    "_id": "c387c9c0-9678-43f8-be87-2d50f2265349"
   }
 ]

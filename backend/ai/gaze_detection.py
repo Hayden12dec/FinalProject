@@ -269,10 +269,10 @@ class GazeDetector:
                         direction = "LOOKING_RIGHT"
                         frame_suspicious = True
                     elif pitch > self.pitch_threshold:
-                        direction = "LOOKING_DOWN"
+                        direction = "LOOKING_UP"
                         frame_suspicious = True
                     elif pitch < -self.pitch_threshold:
-                        direction = "LOOKING_UP"
+                        direction = "LOOKING_DOWN"
                         frame_suspicious = True
 
                     if frame_suspicious:
@@ -308,8 +308,10 @@ class GazeDetector:
             
             # Candidate moving/turning to candidate's LEFT appears on image RIGHT (offset_x > 0 -> yaw > 0)
             # Candidate moving/turning to candidate's RIGHT appears on image LEFT (offset_x < 0 -> yaw < 0)
+            # Moving/tilting UP appears on top of image (offset_y < 0 -> pitch > 0)
+            # Moving/tilting DOWN appears on bottom of image (offset_y > 0 -> pitch < 0)
             yaw = float(offset_x * 40.0)
-            pitch = float(offset_y * 30.0)
+            pitch = -float(offset_y * 30.0)
             
             direction = "FORWARD"
             is_suspicious = False
@@ -320,10 +322,10 @@ class GazeDetector:
                 direction = "LOOKING_RIGHT"
                 is_suspicious = True
             elif pitch > self.pitch_threshold:
-                direction = "LOOKING_DOWN"
+                direction = "LOOKING_UP"
                 is_suspicious = True
             elif pitch < -self.pitch_threshold:
-                direction = "LOOKING_UP"
+                direction = "LOOKING_DOWN"
                 is_suspicious = True
                 
             return {

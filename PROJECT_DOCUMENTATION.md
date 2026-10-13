@@ -223,8 +223,8 @@ The system estimates 3D facial orientation using the Perspective-n-Point (**solv
    $$\arg\min_{\mathbf{R}, \mathbf{t}} \sum_{i} \|\mathbf{p}_i - \pi(\mathbf{K}(\mathbf{R}\mathbf{P}_{w,i} + \mathbf{t}))\|^2$$
 5. **Euler Angles Conversion**: Rodrigues rotation matrix conversion yields **Pitch** ($\theta_x$), **Yaw** ($\theta_y$), and **Roll** ($\theta_z$).
    - $|\text{Yaw}| > 20^\circ \implies$ `LOOKING_LEFT` or `LOOKING_RIGHT`
-   - $\text{Pitch} < -16^\circ \implies$ `LOOKING_UP`
-   - $\text{Pitch} > 16^\circ \implies$ `LOOKING_DOWN`
+   - $\text{Pitch} > 16^\circ \implies$ `LOOKING_UP`
+   - $\text{Pitch} < -16^\circ \implies$ `LOOKING_DOWN`
 
 ---
 

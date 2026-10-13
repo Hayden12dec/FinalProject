@@ -83,6 +83,38 @@ def test_gaze_direction_geometry_fallback(monkeypatch):
     assert pose_left["yaw"] > 20.0
     assert pose_left["is_suspicious"] is True
 
+    # Reset detector history
+    detector._yaw_history.clear()
+    detector._pitch_history.clear()
+
+    # Candidate looking/moving UP (appears on image TOP, y: 30..130, center: 80, height: 480)
+    img_up = np.zeros((480, 640, 3), dtype=np.uint8)
+    monkeypatch.setattr(
+        face_detection.face_detector,
+        "detect_faces",
+        lambda img: [{"bbox": [270, 30, 370, 130], "confidence": 0.9}]
+    )
+    pose_up = detector.estimate_pose(img_up)
+    assert pose_up["direction"] == "LOOKING_UP"
+    assert pose_up["pitch"] > 16.0
+    assert pose_up["is_suspicious"] is True
+
+    # Reset detector history
+    detector._yaw_history.clear()
+    detector._pitch_history.clear()
+
+    # Candidate looking/moving DOWN (appears on image BOTTOM, y: 350..450, center: 400, height: 480)
+    img_down = np.zeros((480, 640, 3), dtype=np.uint8)
+    monkeypatch.setattr(
+        face_detection.face_detector,
+        "detect_faces",
+        lambda img: [{"bbox": [270, 350, 370, 450], "confidence": 0.9}]
+    )
+    pose_down = detector.estimate_pose(img_down)
+    assert pose_down["direction"] == "LOOKING_DOWN"
+    assert pose_down["pitch"] < -16.0
+    assert pose_down["is_suspicious"] is True
+
 def test_audio_detector():
     detector = AudioActivityDetector()
     res_silent = detector.analyze_energy(0.005)
