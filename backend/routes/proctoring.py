@@ -25,7 +25,7 @@ def process_frame(req: FrameAnalysisRequest, current_user: Dict[str, Any] = Depe
     return proctoring_service.process_frame(
         attempt_id=req.attempt_id,
         image_base64=req.image_base64,
-        audio_energy=req.audio_energy
+        audio_energy=req.audio_energy if req.audio_energy is not None else 0.0
     )
 
 @router.post("/system-check")
@@ -160,7 +160,7 @@ def log_event(req: DirectEventLogRequest, current_user: Dict[str, Any] = Depends
     return proctoring_service.log_direct_event(
         attempt_id=req.attempt_id,
         event_type=req.event_type,
-        confidence=req.confidence,
+        confidence=req.confidence if req.confidence is not None else 1.0,
         evidence_image=req.evidence_image,
         metadata=req.metadata,
         is_demo=req.is_demo

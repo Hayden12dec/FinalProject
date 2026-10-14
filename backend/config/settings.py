@@ -1,11 +1,13 @@
 import os
 from typing import List
 from dotenv import load_dotenv
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 load_dotenv()
 
 class Settings(BaseModel):
+    model_config = ConfigDict(case_sensitive=True)
+
     PROJECT_NAME: str = "AI-Based Smart Examination Proctoring System"
     VERSION: str = "1.0.0"
     API_PREFIX: str = "/api"
@@ -62,8 +64,6 @@ class Settings(BaseModel):
     # Admin Registration
     ADMIN_INVITE_CODE: str = os.getenv("ADMIN_INVITE_CODE", "PROCTOR-ADMIN-2026")
 
-    class Config:
-        case_sensitive = True
 
 settings = Settings()
 

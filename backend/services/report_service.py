@@ -69,6 +69,11 @@ class ReportService:
 
         report = {
             "attempt_id": str(attempt["_id"]),
+            "student_name": student.get("name", attempt.get("student_name", "Student")),
+            "exam_title": exam.get("title", attempt.get("exam_title", "Exam")),
+            "suspicion_score": suspicion_score,
+            "risk_level": risk_level,
+            "final_status": final_status,
             "student_info": {
                 "student_id": student.get("student_id", attempt.get("student_code", "STU101")),
                 "name": student.get("name", attempt.get("student_name", "Student")),

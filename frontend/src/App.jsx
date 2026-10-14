@@ -29,7 +29,7 @@ export default function App() {
   useEffect(() => {
     const user = auth.getUser();
     setCurrentUser(user);
-    if (!user && currentRoute !== 'register') {
+    if (!user && currentRoute !== 'register' && currentRoute !== 'admin-register') {
       setCurrentRoute('login');
     }
   }, []);

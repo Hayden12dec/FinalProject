@@ -18,7 +18,7 @@ class ExamService:
     ) -> List[Dict[str, Any]]:
         exams_col = get_exams_col()
         users_col = get_users_col()
-        query = {"status": "active"} if user_role == "student" else {}
+        query: Dict[str, Any] = {"status": "active"} if user_role == "student" else {}
         if created_by:
             query["created_by"] = created_by
             

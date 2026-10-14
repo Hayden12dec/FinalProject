@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import uuid
 import copy
@@ -9,6 +10,19 @@ from backend.config.settings import settings
 import logging
 
 logger = logging.getLogger(__name__)
+
+class InsertResult:
+    def __init__(self, inserted_id):
+        self.inserted_id = inserted_id
+
+class UpdateResult:
+    def __init__(self, matched_count=0, modified_count=0):
+        self.matched_count = matched_count
+        self.modified_count = modified_count
+
+class DeleteResult:
+    def __init__(self, deleted_count=0):
+        self.deleted_count = deleted_count
 
 class MockCursor:
     def __init__(self, data):
@@ -85,6 +99,11 @@ class LocalDocumentCollection:
                 continue
             if isinstance(val, dict):
                 doc_val = doc.get(key)
+                if "$regex" in val:
+                    pattern = str(val["$regex"])
+                    flags = re.IGNORECASE if "i" in str(val.get("$options", "")) else 0
+                    if not re.search(pattern, str(doc_val or ""), flags):
+                        return False
                 if "$in" in val and doc_val not in val["$in"]:
                     return False
                 if "$gte" in val and not (doc_val is not None and doc_val >= val["$gte"]):
@@ -122,10 +141,7 @@ class LocalDocumentCollection:
             new_doc["created_at"] = datetime.utcnow().isoformat()
         self._docs.append(new_doc)
         self._save()
-        
-        class InsertResult:
-            inserted_id = new_doc["_id"]
-        return InsertResult()
+        return InsertResult(new_doc["_id"])
 
     def update_one(self, query, update):
         for doc in self._docs:
@@ -143,28 +159,39 @@ class LocalDocumentCollection:
                         doc[k].append(v)
                 doc["updated_at"] = datetime.utcnow().isoformat()
                 self._save()
-                
-                class UpdateResult:
-                    matched_count = 1
-                    modified_count = 1
-                return UpdateResult()
-        
-        class UpdateResult:
-            matched_count = 0
-            modified_count = 0
-        return UpdateResult()
+                return UpdateResult(1, 1)
+        return UpdateResult(0, 0)
+
+    def update_many(self, query, update):
+        matched = 0
+        modified = 0
+        for doc in self._docs:
+            if self._matches(doc, query):
+                matched += 1
+                if "$set" in update:
+                    for k, v in update["$set"].items():
+                        doc[k] = v
+                if "$inc" in update:
+                    for k, v in update["$inc"].items():
+                        doc[k] = doc.get(k, 0) + v
+                if "$push" in update:
+                    for k, v in update["$push"].items():
+                        if k not in doc or not isinstance(doc[k], list):
+                            doc[k] = []
+                        doc[k].append(v)
+                doc["updated_at"] = datetime.utcnow().isoformat()
+                modified += 1
+        if modified > 0:
+            self._save()
+        return UpdateResult(matched, modified)
 
     def delete_one(self, query):
         for idx, doc in enumerate(self._docs):
             if self._matches(doc, query):
                 self._docs.pop(idx)
                 self._save()
-                class DeleteResult:
-                    deleted_count = 1
-                return DeleteResult()
-        class DeleteResult:
-            deleted_count = 0
-        return DeleteResult()
+                return DeleteResult(1)
+        return DeleteResult(0)
 
     def delete_many(self, query):
         initial = len(self._docs)
@@ -172,13 +199,12 @@ class LocalDocumentCollection:
         deleted = initial - len(self._docs)
         if deleted > 0:
             self._save()
-        class DeleteResult:
-            deleted_count = deleted
-        return DeleteResult()
+        return DeleteResult(deleted)
 
     def count_documents(self, query=None):
         query = query or {}
         return sum(1 for doc in self._docs if self._matches(doc, query))
+
 
 class DatabaseManager:
     def __init__(self):

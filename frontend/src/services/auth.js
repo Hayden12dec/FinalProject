@@ -66,14 +66,14 @@ export const auth = {
   logout() {
     api.setToken(null);
     this.setUser(null);
-    window.location.href = '/login';
+    window.location.href = '/';
   },
 
   async deleteAccount() {
     const res = await api.delete('/auth/me');
     api.setToken(null);
     this.setUser(null);
-    window.location.href = '/login';
+    window.location.href = '/';
     return res;
   }
 };

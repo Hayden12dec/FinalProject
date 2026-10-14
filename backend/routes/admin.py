@@ -20,7 +20,7 @@ def get_dashboard_stats(current_admin: Dict[str, Any] = Depends(get_current_admi
     admin_id = str(current_admin["_id"])
     is_scoped_admin = bool(admin_subject and admin_subject.strip().lower() not in ["all subjects", "all", ""])
 
-    if is_scoped_admin:
+    if is_scoped_admin and admin_subject:
         clean_sub = admin_subject.strip()
         exam_query = {
             "$or": [
@@ -97,7 +97,7 @@ def get_active_sessions(current_admin: Dict[str, Any] = Depends(get_current_admi
     admin_id = str(current_admin["_id"])
     is_scoped_admin = bool(admin_subject and admin_subject.strip().lower() not in ["all subjects", "all", ""])
 
-    if is_scoped_admin:
+    if is_scoped_admin and admin_subject:
         clean_sub = admin_subject.strip()
         exam_query = {
             "$or": [

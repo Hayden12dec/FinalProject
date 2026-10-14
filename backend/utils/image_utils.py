@@ -4,12 +4,13 @@ import uuid
 import cv2
 import numpy as np
 from datetime import datetime
+from typing import Optional, List, Dict, Any
 from backend.config.settings import settings
 import logging
 
 logger = logging.getLogger(__name__)
 
-def decode_base64_image(base64_str: str) -> np.ndarray:
+def decode_base64_image(base64_str: str) -> Optional[np.ndarray]:
     """Decodes base64 string (with or without data URI header) into OpenCV BGR image."""
     try:
         if "," in base64_str:
@@ -46,13 +47,14 @@ def save_evidence_image(img: np.ndarray, student_id: str, exam_id: str, event_ty
         return ""
 
 def annotate_frame(
-    img: np.ndarray,
-    detections: list = None,
-    head_pose: dict = None,
-    events: list = None,
+    img: Optional[np.ndarray],
+    detections: Optional[List[Dict[str, Any]]] = None,
+    head_pose: Optional[Dict[str, Any]] = None,
+    events: Optional[List[Dict[str, Any]]] = None,
     suspicion_score: int = 0,
-    debug_telemetry: dict = None
-) -> np.ndarray:
+    debug_telemetry: Optional[Dict[str, Any]] = None
+) -> Optional[np.ndarray]:
+
     """Draws bounding boxes, head pose vectors, and telemetry overlay on frame."""
     if img is None:
         return None
